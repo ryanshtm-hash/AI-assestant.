@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0d12">
+<title>StudyMate AI — Your Study Space</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0b0d12;
+  --panel: #11141c;
+  --surface: #181c27;
+  --border: #292e3b;
+  --text: #f2f3fa;
+  --muted: #939bad;
+  --accent: #a99bff;
+  --accent2: #d4caff;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+button, textarea { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.app { display: flex; height: 100%; }
+.sidebar {
+  width: 255px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 13px;
+  background: #0f1118;
+  border-right: 1px solid var(--border);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 7px 14px;
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: -.6px;
+}
+.logo {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #151125;
+  background: linear-gradient(135deg, #d7ceff, #9786ff);
+  font-size: 19px;
+}
+.brand small { color: var(--accent); font-size: inherit; }
+.new-chat {
+  padding: 12px;
+  border: 1px solid #383346;
+  border-radius: 12px;
+  color: var(--text);
+  background: #1a1925;
+  text-align: left;
+}
+.new-chat:hover { background: #262237; }
+.side-label {
+  margin: 12px 7px 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+.shortcuts { display: grid; gap: 5px; }
+.shortcut {
+  border: 0;
+  padding: 10px;
+  border-radius: 9px;
+  background: transparent;
+  color: #c7ccda;
+  text-align: left;
+  font-size: 13px;
+}
+.shortcut:hover { background: var(--surface); }
+.side-bottom {
+  margin-top: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.online { color: #79dfb0; }
+.main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  height: 63px;
+  padding: 0 23px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.top-title { font-size: 14px; font-weight: 650; }
+.model-tag {
+  font-size: 11px;
+  color: #c2b8ff;
+  background: #211e34;
+  border: 1px solid #37304f;
+  border-radius: 30px;
+  padding: 7px 10px;
+}
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding: 32px 20px 28px;
+}
+.inner { max-width: 790px; margin: auto; }
+.welcome { padding-top: min(12vh, 100px); }
+.welcome .spark { font-size: 34px; margin-bottom: 17px; }
+.welcome h1 {
+  margin: 0;
+  font-size: clamp(29px, 4vw, 43px);
+  letter-spacing: -1.7px;
+  line-height: 1.16;
+}
+.gradient {
+  background: linear-gradient(90deg, #eee9ff, #a99bff 65%, #8eafff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.welcome p { color: var(--muted); line-height: 1.7; font-size: 14px; }
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 27px;
+}
+.suggestion {
+  padding: 15px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  text-align: left;
+  line-height: 1.5;
+  font-size: 13px;
+}
+.suggestion:hover { border-color: #7163b4; background: #171725; }
+.suggestion b { display: block; margin-bottom: 5px; }
+.message {
+  display: flex;
+  gap: 13px;
+  margin: 0 0 27px;
+  align-items: flex-start;
+}
+.avatar {
+  width: 31px;
+  height: 31px;
+  flex: 0 0 31px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 750;
+}
+.message.user .avatar { background: #343044; color: #d5caff; }
+.message.assistant .avatar {
+  background: linear-gradient(135deg, #d7ceff, #9786ff);
+  color: #171329;
+}
+.body { min-width: 0; flex: 1; }
+.message-label {
+  margin: 6px 0 9px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 650;
+}
+.content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.85;
+}
+.content code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .9em;
+  background: #242838;
+  padding: 2px 5px;
+  border-radius: 5px;
+}
+.content pre {
+  overflow-x: auto;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #090b10;
+  white-space: pre;
+}
+.content pre code { padding: 0; background: none; }
+.message-actions { display: flex; gap: 7px; margin-top: 9px; }
+.mini-btn {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  padding: 5px 9px;
+  border-radius: 7px;
+  font-size: 11px;
+}
+.mini-btn:hover { color: var(--text); background: var(--surface); }
+.cursor::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 15px;
+  margin-left: 3px;
+  vertical-align: -2px;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: blink .8s steps(2, start) infinite;
+}
+@keyframes blink { to { visibility: hidden; } }
+.composer-wrap {
+  padding: 12px 20px 16px;
+  background: linear-gradient(transparent, var(--bg) 18%);
+}
+.composer-inner { max-width: 790px; margin: auto; }
+.composer {
+  padding: 12px;
+  border: 1px solid #373d4c;
+  background: #151923;
+  border-radius: 17px;
+  box-shadow: 0 12px 40px #0003;
+}
+.composer:focus-within { border-color: #7868bb; }
+textarea {
+  display: block;
+  width: 100%;
+  resize: none;
+  min-height: 47px;
+  max-height: 180px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  padding: 5px 5px 10px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+textarea::placeholder { color: #777f91; }
+.composer-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.hint { color: #81899b; font-size: 11px; }
+.send {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--accent);
+  color: #171329;
+  font-size: 18px;
+  font-weight: 800;
+}
+.send:disabled { opacity: .45; cursor: not-allowed; }
+.stop {
+  display: none;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid #54465a;
+  color: #f0c6d3;
+  background: #2a1d28;
+  font-size: 12px;
+}
+.disclaimer {
+  margin-top: 9px;
+  color: #737b8e;
+  font-size: 10px;
+  text-align: center;
+}
+.mobile-new { display: none; }
+@media(max-width: 700px) {
+  .sidebar { display: none; }
+  .topbar { height: 56px; padding: 0 14px; }
+  .mobile-new { display: block; }
+  .messages { padding: 24px 14px; }
+  .welcome { padding-top: 7vh; }
+  .suggestions { grid-template-columns: 1fr; }
+  .composer-wrap { padding: 10px 10px 12px; }
+  .hint { font-size: 10px; }
+  .message { gap: 9px; }
+  .avatar { width: 28px; height: 28px; flex-basis: 28px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">✦</div> StudyMate <small>AI</small></div>
+    <button class="new-chat" id="newChat">＋ &nbsp; New conversation</button>
+    <div class="side-label">STUDY TOOLS</div>
+    <div class="shortcuts">
+      <button class="shortcut" data-prompt="Explain a difficult concept to me step by step.">◈ &nbsp; Explain a concept</button>
+      <button class="shortcut" data-prompt="Create a Class 9 revision quiz with 5 questions. Ask one question at a time and wait for my answer.">◎ &nbsp; Practice quiz</button>
+      <button class="shortcut" data-prompt="Help me create concise revision notes for a chapter. Ask me which chapter first.">▤ &nbsp; Revision notes</button>
+      <button class="shortcut" data-prompt="Give me a challenging Class 9 Maths or Physics problem and guide me through it.">⌘ &nbsp; Challenge me</button>
+    </div>
+    <div class="side-bottom">
+      <div class="online">● &nbsp; Local AI connection</div>
+      Your questions are sent to Ollama on this Mac. Answers may take time depending on your model.
+    </div>
+  </aside>
+
+  <section class="main">
+    <header class="topbar">
+      <div class="top-title">Your personal study space</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="mini-btn mobile-new" id="mobileNew">＋ New</button>
+        <div class="model-tag">✦ Local Ollama</div>
+      </div>
+    </header>
+
+    <main class="messages" id="messages">
+      <div class="inner" id="inner">
+        <section class="welcome" id="welcome">
+          <div class="spark">✦</div>
+          <h1>Learn anything.<br><span class="gradient">One step at a time.</span></h1>
+          <p>Your personal AI tutor for Maths, Physics, Chemistry, Biology and more.<br>Ask a question and watch the answer appear live.</p>
+          <div class="suggestions">
+            <button class="suggestion" data-prompt="Explain Newton's second law with an example."><b>⚡ Physics</b>Explain Newton's second law</button>
+            <button class="suggestion" data-prompt="Teach me how to solve linear equations, with an example and a practice question."><b>∑ Mathematics</b>Learn linear equations</button>
+            <button class="suggestion" data-prompt="Explain the differences between elements, compounds, and mixtures with examples."><b>⚗ Chemistry</b>Elements vs compounds vs mixtures</button>
+            <button class="suggestion" data-prompt="Make a 5-question Class 9 science quiz, ask one question at a time, and check my answers."><b>◎ Quick quiz</b>Test what I know</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div class="composer-wrap">
+      <div class="composer-inner">
+        <div class="composer">
+          <textarea id="question" rows="1" placeholder="Ask anything about your studies..." aria-label="Your question"></textarea>
+          <div class="composer-tools">
+            <span class="hint">↵ Enter to send · Shift + Enter for a new line</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="stop" id="stop">■ Stop</button>
+              <button class="send" id="send" aria-label="Send message">↑</button>
+            </div>
+          </div>
+        </div>
+        <div class="disclaimer">StudyMate can make mistakes. Verify important answers with your textbook.</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const messagesEl = document.getElementById("messages");
+const inner = document.getElementById("inner");
+const welcome = document.getElementById("welcome");
+const input = document.getElementById("question");
+const send = document.getElementById("send");
+const stop = document.getElementById("stop");
+
+let history = [];
+let controller = null;
+let busy = false;
+
+function scrollBottom() {
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function addMessage(role, text = "") {
+  const message = document.createElement("article");
+  message.className = "message " + role;
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.textContent = role === "user" ? "Y" : "✦";
+
+  const body = document.createElement("div");
+  body.className = "body";
+
+  const label = document.createElement("div");
+  label.className = "message-label";
+  label.textContent = role === "user" ? "YOU" : "STUDYMATE";
+
+  const content = document.createElement("div");
+  content.className = "content";
+  content.textContent = text;
+
+  body.append(label, content);
+  message.append(avatar, body);
+  inner.appendChild(message);
+
+  return { message, content, body };
+}
+
+// Safely display plain text with lightweight code formatting.
+function renderText(el, text) {
+  el.replaceChildren();
+  const parts = text.split(/(```[\s\S]*?```|`[^`\n]+`)/g);
+  for (const part of parts) {
+    if (part.startsWith("```") && part.endsWith("```")) {
+      const pre = document.createElement("pre");
+      const code = document.createElement("code");
+      code.textContent = part.slice(3, -3).replace(/^[^\n]*\n/, "");
+      pre.appendChild(code);
+      el.appendChild(pre);
+    } else if (part.startsWith("`") && part.endsWith("`")) {
+      const code = document.createElement("code");
+      code.textContent = part.slice(1, -1);
+      el.appendChild(code);
+    } else {
+      el.appendChild(document.createTextNode(part));
+    }
+  }
+}
+
+function setBusy(value) {
+  busy = value;
+  send.disabled = value;
+  input.disabled = false;
+  stop.style.display = value ? "block" : "none";
+  send.style.display = value ? "none" : "block";
+}
+
+async function ask(rawQuestion) {
+  const question = rawQuestion.trim();
+  if (!question || busy) return;
+
+  if (welcome) welcome.remove();
+  addMessage("user", question);
+  input.value = "";
+  input.style.height = "auto";
+
+  const previousHistory = history.slice(-10);
+  const assistant = addMessage("assistant", "");
+  assistant.content.classList.add("cursor");
+
+  controller = new AbortController();
+  setBusy(true);
+  let answer = "";
+
+  try {
+    const response = await fetch("/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, history: previousHistory }),
+      signal: controller.signal
+    });
+
+    if (!response.ok && !response.body) {
+      throw new Error("Server error: " + response.status);
+    }
+    if (!response.body) throw new Error("Streaming is not supported by this response.");
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let finished = false;
+
+    while (!finished) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        const item = JSON.parse(line);
+
+        if (item.error) throw new Error(item.error);
+
+        if (item.token) {
+          answer += item.token;
+          renderText(assistant.content, answer);
+          scrollBottom();
+        }
+
+        if (item.done) finished = true;
+      }
+    }
+
+    if (buffer.trim()) {
+      const item = JSON.parse(buffer);
+      if (item.error) throw new Error(item.error);
+      if (item.token) answer += item.token;
+    }
+
+    renderText(assistant.content, answer || "The model returned an empty answer.");
+    if (answer) {
+      history.push(
+        { role: "user", content: question },
+        { role: "assistant", content: answer }
+      );
+      history = history.slice(-10);
+    }
+  } catch (error) {
+    if (error.name === "AbortError") {
+      if (answer) {
+        history.push(
+          { role: "user", content: question },
+          { role: "assistant", content: answer }
+        );
+        history = history.slice(-10);
+      }
+      if (!answer) assistant.content.textContent = "Generation stopped.";
+    } else {
+      assistant.content.textContent =
+        (answer ? answer + "\n\n" : "") + "⚠ " + error.message;
+    }
+  } finally {
+    assistant.content.classList.remove("cursor");
+    setBusy(false);
+    controller = null;
+    input.focus();
+    scrollBottom();
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "message-actions";
+  const copy = document.createElement("button");
+  copy.className = "mini-btn";
+  copy.textContent = "▢ Copy answer";
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(answer);
+      copy.textContent = "✓ Copied";
+    } catch {
+      copy.textContent = "Copy unavailable";
+    }
+  });
+  if (answer) {
+    actions.appendChild(copy);
+    assistant.body.appendChild(actions);
+  }
+}
+
+function newChat() {
+  if (busy && controller) controller.abort();
+  history = [];
+  inner.replaceChildren();
+  const section = document.createElement("section");
+  section.className = "welcome";
+  section.innerHTML =
+    '<div class="spark">✦</div>' +
+    '<h1>Ready for a fresh start?<br><span class="gradient">What will we learn?</span></h1>' +
+    '<p>Ask a study question below and watch the answer appear live.</p>';
+  inner.appendChild(section);
+  input.value = "";
+  input.focus();
+}
+
+send.addEventListener("click", () => ask(input.value));
+
+input.addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    ask(input.value);
+  }
+});
+
+input.addEventListener("input", () => {
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, 180) + "px";
+});
+
+stop.addEventListener("click", () => {
+  if (controller) controller.abort();
+});
+
+document.getElementById("newChat").addEventListener("click", newChat);
+document.getElementById("mobileNew").addEventListener("click", newChat);
+
+document.querySelectorAll("[data-prompt]").forEach(button => {
+  button.addEventListener("click", () => {
+    input.value = button.dataset.prompt;
+    input.focus();
+    ask(input.value);
+  });
+});
+</script>
+</body>
+</html>
